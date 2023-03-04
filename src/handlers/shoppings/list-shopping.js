@@ -1,3 +1,5 @@
+const { headers } = require('../../utils/http-utils');
+
 module.exports.handler = async (event, _context, _callback) => {
     console.log("[DEBUG - List Shippings]", event);
     return {
