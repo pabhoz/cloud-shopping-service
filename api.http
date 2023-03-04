@@ -16,7 +16,7 @@ Content-Type: application/json
 }
 
 ###
-POST https://localhost:4002/shopping
+POST http://127.0.0.1:4002/shopping
 Content-Type: application/json 
 
 {

@@ -44,6 +44,7 @@ functions:
       - http:
             path: /shopping
             method: POST
+            cors: true
   
   listShoppings:
     timeout: 300
@@ -52,9 +53,11 @@ functions:
       - http:
             path: /shopping/{shoppingId}
             method: GET
+            cors: true
       - http:
             path: /shopping
             method: GET
+            cors: true
 
 resources: 
   Resources:
@@ -77,7 +80,7 @@ custom:
     lambdaPort: 4003
     noAuth: true
     stage: ${opt:stage, 'dev'}
-    useChildProcesses: true
+  region: ${opt:region, 'us-east-1'}
   
 plugins:
   - serverless-prune-plugin

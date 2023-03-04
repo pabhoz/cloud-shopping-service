@@ -18,9 +18,10 @@ const SHOPPINGS_TABLE = `Shoppings-${process.env.ENV}`;
 */
 const createShopping = async (body) => {
     const shoppingId = uid(16);
+    const status = "APPROVED";
     const createdAt = Date.now();
     const updatedAt = Date.now();
-    return write({ shoppingId, ...body, createdAt, updatedAt }, SHOPPINGS_TABLE);
+    return write({ shoppingId, ...body, status, createdAt, updatedAt }, SHOPPINGS_TABLE);
 }
 module.exports = {
     createShopping,
