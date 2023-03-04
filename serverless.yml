@@ -1,0 +1,73 @@
+service: shoppings-service
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  tags:
+    project: cloud-learning
+    env: ${opt:stage, 'dev'}
+  runtime: nodejs14.x
+  region: ${file(./config/${opt:stage, 'dev'}.yml):REGION}
+  endpointType: 'Regional'
+  logRetentionInDays: 3
+  deploymentBucket:
+    name: ${file(./config/${opt:stage, 'dev'}.yml):DEPLOYMENT_BUCKET}
+  environment:
+    ENV: ${opt:stage, 'dev'}
+  iam:
+    role:
+      name: cloud-invoke-lambdas-${opt:stage, 'dev'}
+      statements:
+        - Effect: Allow
+          Action:
+            - lambda:InvokeFunction
+          Resource: '*'
+
+functions:
+
+  createShopping:
+    timeout: 300
+    handler: src/handlers/shoppings/create-shopping.handler
+    events:
+      - http:
+            path: /shopping
+            method: POST
+  
+  listShoppings:
+    timeout: 300
+    handler: src/handlers/shoppings/list-shopping.handler
+    events:
+      - http:
+            path: /shopping/{shoppingId}
+            method: GET
+      - http:
+            path: /shopping
+            method: GET
+
+resources: 
+  Resources:
+    ShoppingsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Shoppings-${opt:stage, 'dev'}
+        AttributeDefinitions:
+          - AttributeName: shoppingId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: shoppingId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+
+custom:
+  serverless-offline:
+    host: 127.0.0.1
+    httpPort: 4002
+    lambdaPort: 4003
+    noAuth: true
+    stage: ${opt:stage, 'dev'}
+    useChildProcesses: true
+  
+plugins:
+  - serverless-prune-plugin
+  - serverless-offline
