@@ -59,6 +59,31 @@ functions:
             method: GET
             cors: true
 
+  portero:
+    timeout: 300
+    handler: src/handlers/portero.handler
+    events:
+      - eventBridge:
+          eventBus: ${file(./config/${opt:stage, 'dev'}.yml):BUS_ARN}
+          pattern:
+            source:
+              - cloud-computing
+            detail-type:
+              - test.CREATED
+              - test.UPDATED
+              - user.CREATED
+      - stream:
+          type: dynamodb
+          arn:
+            Fn::GetAtt:
+              - ShoppingsTable
+              - StreamArn
+
+  emailDispatcher:
+    timeout: 300
+    handler: src/handlers/email-dispatcher.handler
+  
+
 resources: 
   Resources:
     ShoppingsTable:
@@ -72,6 +97,16 @@ resources:
           - AttributeName: shoppingId
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
+    RoleForLambdaInvoke:
+      Type: AWS::Lambda::Permission
+      Properties:
+        FunctionName:
+          Fn::GetAtt: [EmailDispatcherLambdaFunction, Arn]
+        Action: lambda:InvokeFunction
+        Principal: events.amazonaws.com
+    UserEventsRuleTrigger: ${file(./src/triggers/user-events-rule.yml)}
 
 custom:
   serverless-offline:

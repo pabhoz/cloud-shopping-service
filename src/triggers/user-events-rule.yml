@@ -1,0 +1,30 @@
+Type: AWS::Events::Rule
+Properties:
+  Description: 'User Events Rule'
+  EventBusName: ${file(./config/${opt:stage, 'dev'}.yml):BUS_ARN}
+  EventPattern:
+    source:
+      - cloud-computing
+    detail-type:
+      - user.CREATED
+    detail:
+      email:
+        - exists: true
+      name:
+        - exists: true
+      customerType:
+        - 'PREMIUM'
+  State: 'ENABLED'
+  Targets:
+    - Arn:
+        Fn::GetAtt: [EmailDispatcherLambdaFunction, Arn]
+      Id: emailDispatcherUserEventRule
+      InputTransformer:
+        InputPathsMap:
+          'email': '$.detail.email'
+          'name': '$.detail.name'
+        InputTemplate: |
+          {
+            "email": <email>,
+            "name": <name>
+          }
